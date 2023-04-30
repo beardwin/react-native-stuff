@@ -21,12 +21,9 @@ interface Props {
   showControls?: boolean;
 }
 
-type ImperativeAPI = Pick<
-  ReturnType<typeof useTimer>,
-  "start" | "cancel" | "reset"
->;
+type TimerAPI = Pick<ReturnType<typeof useTimer>, "start" | "cancel" | "reset">;
 
-export const Timer = forwardRef<ImperativeAPI, Props>(
+export const Timer = forwardRef<TimerAPI, Props>(
   (
     {
       duration = 15000,
