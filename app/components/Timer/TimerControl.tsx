@@ -1,29 +1,34 @@
-import { Button, StyleSheet, Text } from "react-native";
+import { Button, ColorValue, StyleSheet, Text } from "react-native";
 import { TimerState } from "./types";
 
 interface Props {
   state: TimerState;
+  color?: ColorValue;
   onStart: () => void;
   onCancel: () => void;
   onReset: () => void;
 }
 
-export const TimerControl = ({ state, onStart, onCancel, onReset }: Props) => {
+export const TimerControl = ({
+  state,
+  color = "rgba(0,0,0,1)",
+  onStart,
+  onCancel,
+  onReset,
+}: Props) => {
   switch (state) {
     case "running":
-      return <Button title="Cancel" onPress={onCancel} color={buttonColor} />;
+      return <Button title="Cancel" onPress={onCancel} color={color} />;
     case "idle":
-      return <Button title="Start" onPress={onStart} color={buttonColor} />;
+      return <Button title="Start" onPress={onStart} color={color} />;
     case "resetting":
     case "finished":
-      return <Text style={styles.text}>Cancel</Text>;
+      return <Text style={[styles.text, { color, opacity: 0.1 }]}>Cancel</Text>;
   }
 };
 
-const buttonColor = "rgba(166, 225, 250, 0.7)";
 const styles = StyleSheet.create({
   text: {
-    color: "rgba(166, 225, 250, 0.1)",
     fontSize: 18,
     padding: 8,
     textAlign: "center",

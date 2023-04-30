@@ -1,4 +1,4 @@
-import { View, StyleSheet, Text } from "react-native";
+import { View, StyleSheet, Text, ColorValue } from "react-native";
 import { TimerControl } from "./TimerControl";
 import React from "react";
 import Svg, { Circle } from "react-native-svg";
@@ -15,8 +15,20 @@ interface Props {
   duration: number;
   radius: number;
   strokeWidth: number;
+  backgroundColor?: ColorValue;
+  foregroundColor?: ColorValue;
+  fontColor?: ColorValue;
+  showControls?: boolean;
 }
-export const Timer = ({ duration = 15000, radius, strokeWidth }: Props) => {
+export const Timer = ({
+  duration = 15000,
+  radius,
+  strokeWidth,
+  backgroundColor = "rgba(0, 0, 0, 0.2)",
+  foregroundColor = "rgba(0, 0, 0, 0.7)",
+  fontColor = "rgba(0,0,0, 0.7)",
+  showControls = true,
+}: Props) => {
   const { progress, ...timer } = useTimer();
   const width = radius * 2;
   const r = radius - strokeWidth / 2;
@@ -36,20 +48,20 @@ export const Timer = ({ duration = 15000, radius, strokeWidth }: Props) => {
   return (
     <View style={[styles.container]}>
       <View style={[styles.timerContainer, { width }]}>
-        <Svg style={[StyleSheet.absoluteFillObject]}>
+        <Svg style={styles.svg}>
           <Circle
             cx={width / 2}
             cy={width / 2}
             r={r}
             strokeWidth={strokeWidth}
-            stroke="#303858"
+            stroke={backgroundColor}
           />
           <AnimatedCircle
             cx={width / 2}
             cy={width / 2}
             r={r}
-            strokeWidth={strokeWidth * 0.66}
-            stroke="#A6E1FA"
+            strokeWidth={strokeWidth}
+            stroke={foregroundColor}
             strokeDasharray={circumference}
             animatedProps={animatedProps}
           />
@@ -60,20 +72,23 @@ export const Timer = ({ duration = 15000, radius, strokeWidth }: Props) => {
             {
               width: diameter - strokeWidth,
               fontSize: diameter * 0.3,
+              color: fontColor,
             },
           ]}
           textAlign="center"
           text={progressValue}
         />
       </View>
-      <View style={styles.controlContainer}>
-        <TimerControl
-          state={timer.state}
-          onStart={() => timer.start({ duration })}
-          onCancel={timer.cancel}
-          onReset={timer.reset}
-        />
-      </View>
+      {showControls ? (
+        <View style={styles.controlContainer}>
+          <TimerControl
+            state={timer.state}
+            onStart={() => timer.start({ duration })}
+            onCancel={timer.cancel}
+            onReset={timer.reset}
+          />
+        </View>
+      ) : null}
     </View>
   );
 };
@@ -81,18 +96,21 @@ export const Timer = ({ duration = 15000, radius, strokeWidth }: Props) => {
 const styles = StyleSheet.create({
   container: {
     justifyContent: "center",
-    alignContent: "center",
+    alignItems: "center",
   },
   timerContainer: {
     aspectRatio: 1,
     justifyContent: "center",
     alignItems: "center",
   },
+  svg: {
+    ...StyleSheet.absoluteFillObject,
+    transform: [{ rotate: "-90deg" }],
+  },
   controlContainer: {
     justifyContent: "center",
   },
   progress: {
     textAlign: "center",
-    color: "rgba(255, 255, 255, 0.7)",
   },
 });
