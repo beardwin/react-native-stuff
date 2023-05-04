@@ -23,7 +23,7 @@ export const TimerControl = ({
       return <Button title="Start" onPress={onStart} color={color} />;
     case "resetting":
     case "finished":
-      return <Text style={[styles.text, { color, opacity: 0.1 }]}>Cancel</Text>;
+      return <Button title="Cancel" onPress={onStart} color={color} disabled />;
   }
 };
 
