@@ -1,6 +1,6 @@
+import { Link } from "expo-router";
 import React from "react";
 import { Pressable, ScrollView, StyleSheet } from "react-native";
-import { Link } from "expo-router";
 import { Row } from "../src/components/Row";
 
 export default function Page() {
