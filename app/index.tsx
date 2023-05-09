@@ -1,24 +1,12 @@
-import { Link } from "expo-router";
 import React from "react";
-import { Pressable, ScrollView, StyleSheet } from "react-native";
-import { Row } from "../src/components/Row";
+import { ScrollView, StyleSheet } from "react-native";
+import { RowLink } from "../src/components/RowLink";
 
 export default function Page() {
   return (
     <ScrollView>
-      <Link href="/timer" asChild>
-        <Pressable>
-          {({ pressed }) => (
-            <Row description="Timer Control" pressed={pressed} />
-          )}
-        </Pressable>
-      </Link>
+      <RowLink href="/tabs">Tabs</RowLink>
+      <RowLink href="/timer">Timer</RowLink>
     </ScrollView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-});

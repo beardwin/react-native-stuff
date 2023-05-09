@@ -10,7 +10,7 @@ export const Row = ({ description, pressed }: Props) => {
   return (
     <View style={[styles.row, { opacity: pressed ? 0.2 : 1 }]}>
       <Text>{description}</Text>
-      <AntDesign name="right" size={24} color="black" />
+      <AntDesign name="right" size={24} color="grey" />
     </View>
   );
 };
