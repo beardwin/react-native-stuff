@@ -6,7 +6,9 @@ const AppLayout = () => {
   return (
     <SafeAreaProvider>
       <SafeAreaView style={styles.safearea}>
-        <Stack />
+        <Stack>
+          <Stack.Screen name="tabs" options={{ presentation: "modal" }} />
+        </Stack>
       </SafeAreaView>
     </SafeAreaProvider>
   );

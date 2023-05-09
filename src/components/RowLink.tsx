@@ -3,7 +3,7 @@ import { Row } from "./Row";
 import { Link } from "expo-router";
 import { LinkProps } from "expo-router/build/link/Link";
 
-interface Props extends LinkProps {
+interface Props extends Omit<LinkProps, "asChild"> {
   children: string;
 }
 
