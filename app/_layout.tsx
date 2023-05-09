@@ -1,4 +1,4 @@
-import { Stack } from "expo-router";
+import { Link, Stack } from "expo-router";
 import { StyleSheet } from "react-native";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 
@@ -7,7 +7,18 @@ const AppLayout = () => {
     <SafeAreaProvider>
       <SafeAreaView style={styles.safearea}>
         <Stack>
-          <Stack.Screen name="tabs" options={{ presentation: "modal" }} />
+          <Stack.Screen
+            name="tabs"
+            options={{
+              presentation: "modal",
+              headerLeft: () => (
+                <Link href=".." suppressHighlighting>
+                  Close
+                </Link>
+              ),
+            }}
+          />
+          <Stack.Screen name="timer" options={{ title: "Timer" }} />
         </Stack>
       </SafeAreaView>
     </SafeAreaProvider>
