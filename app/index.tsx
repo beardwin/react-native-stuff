@@ -1,12 +1,6 @@
 import React from "react";
-import { ScrollView, StyleSheet } from "react-native";
-import { RowLink } from "../src/components/RowLink";
+import { Redirect } from "expo-router";
 
-export default function Page() {
-  return (
-    <ScrollView>
-      <RowLink href="/tabs">Tabs (modal)</RowLink>
-      <RowLink href="/timer">Timer</RowLink>
-    </ScrollView>
-  );
+export default function RootScreen() {
+  return <Redirect href="components" />;
 }
