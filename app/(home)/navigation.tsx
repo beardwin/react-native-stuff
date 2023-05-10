@@ -1,12 +1,11 @@
 import React from "react";
 import { ScrollView, View, Text } from "react-native";
+import { RowLink } from "../../src/components/RowLink";
 
 export default function NavigationScreen() {
   return (
     <ScrollView>
-      <View>
-        <Text>TODO</Text>
-      </View>
+      <RowLink href="/navigation/header-buttons">Header Buttons</RowLink>
     </ScrollView>
   );
 }
