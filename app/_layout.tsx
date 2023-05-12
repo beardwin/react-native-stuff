@@ -7,6 +7,10 @@ export default function AppLayout() {
         name="(home)"
         options={{ title: "Home", headerShown: false }}
       />
+      <Stack.Screen
+        name="navigation/modal"
+        options={{ title: "Modal", presentation: "modal" }}
+      />
     </Stack>
   );
 }
