@@ -6,6 +6,7 @@ export default function NavigationScreen() {
   return (
     <ScrollView>
       <RowLink href="/navigation/header-buttons">Header Buttons</RowLink>
+      <RowLink href="/navigation/modal">Modal</RowLink>
     </ScrollView>
   );
 }
