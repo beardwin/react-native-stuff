@@ -54,6 +54,13 @@ export default function Page() {
         </Card>
       </Row>
       <Row>
+        <Card product={product} width={100} aspectRatio={1} horizontal>
+          <ProductCard.Merchant />
+          <ProductCard.Title />
+          <ProductCard.Price />
+        </Card>
+      </Row>
+      <Row>
         <Card product={product}>
           <ProductCard.Price />
           <ProductCard.Title />

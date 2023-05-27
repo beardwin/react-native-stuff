@@ -36,6 +36,7 @@ type Measurements =
 
 interface Props {
   product: Product;
+  horizontal?: boolean;
   children?: React.ReactNode;
 }
 
@@ -44,6 +45,7 @@ export const ProductCard = ({
   width,
   height,
   aspectRatio,
+  horizontal,
   children,
 }: Props & Measurements) => {
   const window = useWindowDimensions();
@@ -58,13 +60,18 @@ export const ProductCard = ({
   }
   return (
     <ProductCardProvider product={product}>
-      <View style={[styles.container, { width: _width }]}>
+      <View
+        style={[
+          styles.container,
+          horizontal ? { flex: 1, flexDirection: "row" } : { width: _width },
+        ]}
+      >
         <View
           style={{ width: _width, height: _height, aspectRatio: _aspectRatio }}
         >
           <Image />
         </View>
-        <View style={styles.content}>{children}</View>
+        <View style={horizontal ? { flex: 1 } : null}>{children}</View>
       </View>
     </ProductCardProvider>
   );
@@ -73,8 +80,5 @@ export const ProductCard = ({
 const styles = StyleSheet.create({
   container: {
     gap: 8,
-  },
-  content: {
-    // gap: 2,
   },
 });
