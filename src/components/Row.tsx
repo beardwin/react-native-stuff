@@ -2,14 +2,20 @@ import { View, StyleSheet, Text } from "react-native";
 import { AntDesign } from "@expo/vector-icons";
 
 interface Props {
-  description: string;
+  title: string;
+  description?: string;
   pressed?: boolean;
 }
 
-export const Row = ({ description, pressed }: Props) => {
+export const Row = ({ title, description, pressed }: Props) => {
   return (
     <View style={[styles.row, { opacity: pressed ? 0.2 : 1 }]}>
-      <Text>{description}</Text>
+      <View>
+        <Text>{title}</Text>
+        {description ? (
+          <Text style={styles.description}>{description}</Text>
+        ) : null}
+      </View>
       <AntDesign name="right" size={24} color="grey" />
     </View>
   );
@@ -25,5 +31,8 @@ const styles = StyleSheet.create({
     padding: 16,
     borderBottomWidth: 1,
     borderBottomColor: "rgba(0,0,0,0.1)",
+  },
+  description: {
+    fontSize: 12,
   },
 });
