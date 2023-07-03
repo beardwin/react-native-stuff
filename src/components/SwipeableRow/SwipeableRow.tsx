@@ -2,6 +2,7 @@ import React from "react";
 import { StyleSheet, View } from "react-native";
 import Animated, {
   Easing,
+  interpolate,
   useAnimatedGestureHandler,
   useAnimatedStyle,
   useSharedValue,
@@ -18,11 +19,7 @@ interface Props {
   children: React.ReactNode;
 }
 
-export const SwipeableOptions = ({
-  leftOption,
-  rightOption,
-  children,
-}: Props) => {
+export const SwipeableRow = ({ leftOption, rightOption, children }: Props) => {
   const translateX = useSharedValue(0);
   const swipeRightEnabled = Boolean(leftOption);
   const swipeLeftEnabled = Boolean(rightOption);
@@ -68,11 +65,27 @@ export const SwipeableOptions = ({
     };
   });
 
+  const leftOptionWidth = useAnimatedStyle(() => {
+    return {
+      width: interpolate(translateX.value, [-1, 0, 1], [0, 0, 1]),
+    };
+  });
+
+  const rightOptionWidth = useAnimatedStyle(() => {
+    return {
+      width: interpolate(translateX.value, [-1, 0, 1], [1, 0, 0]),
+    };
+  });
+
   return (
     <View style={[styles.swipeableRow]}>
       <View style={styles.optionsContainer}>
-        <View style={[styles.option, styles.left]}>{leftOption}</View>
-        <View style={[styles.option, styles.right]}>{rightOption}</View>
+        <Animated.View style={[styles.option, styles.left, leftOptionWidth]}>
+          {leftOption}
+        </Animated.View>
+        <Animated.View style={[styles.option, styles.right, rightOptionWidth]}>
+          {rightOption}
+        </Animated.View>
       </View>
       <PanGestureHandler onGestureEvent={onGestureEvent}>
         <Animated.View style={rowStyle}>{children}</Animated.View>
@@ -90,7 +103,6 @@ const styles = StyleSheet.create({
   },
   option: {
     position: "absolute",
-    borderWidth: 1,
     top: 0,
     bottom: 0,
   },
