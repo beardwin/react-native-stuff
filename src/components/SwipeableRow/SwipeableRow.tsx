@@ -2,6 +2,7 @@ import React from "react";
 import { StyleSheet, View } from "react-native";
 import Animated, {
   Easing,
+  SharedValue,
   interpolate,
   useAnimatedGestureHandler,
   useAnimatedStyle,
@@ -9,81 +10,94 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 import {
+  GestureEventPayload,
   PanGestureHandler,
+  PanGestureHandlerEventPayload,
   PanGestureHandlerGestureEvent,
 } from "react-native-gesture-handler";
 
+type SwipeableRowContext = {
+  startX: number;
+};
+
 interface Props {
+  /**
+   * The left option to display when swiping left to right
+   */
   leftOption?: JSX.Element;
+
+  /**
+   * The right option to display when swiping right to left
+   */
   rightOption?: JSX.Element;
+
+  /**
+   * The shared value to use for the translateX value.
+   * This value will be updated while the user swipes
+   * as well as lets go.
+   */
+  translateX?: SharedValue<number>;
+
+  /**
+   * Fired when the user lets go of the swipeable row
+   */
+  onSwipeEnd?: (
+    event: Readonly<GestureEventPayload & PanGestureHandlerEventPayload>
+  ) => void;
+
+  /**
+   * The component which will pan right and left as the user drags
+   */
   children: React.ReactNode;
 }
 
-export const SwipeableRow = ({ leftOption, rightOption, children }: Props) => {
-  const translateX = useSharedValue(0);
+export const SwipeableRow = ({
+  leftOption,
+  rightOption,
+  translateX = { value: 0 },
+  onSwipeEnd,
+  children,
+}: Props) => {
+  const _translateX = useSharedValue(0);
   const swipeRightEnabled = Boolean(leftOption);
   const swipeLeftEnabled = Boolean(rightOption);
-  // const leftBg = leftOption?.backgroundColor ?? "transparent";
-  // const rightBg = rightOption?.backgroundColor ?? "transparent";
 
   const onGestureEvent = useAnimatedGestureHandler<
     PanGestureHandlerGestureEvent,
-    { startX: number }
+    SwipeableRowContext
   >({
-    onStart: (_, ctx) => {
-      ctx.startX = translateX.value;
+    onStart: (event, ctx) => {
+      ctx.startX = _translateX.value;
+      translateX.value = _translateX.value;
     },
     onActive: (event, ctx) => {
       if (event.translationX > ctx.startX && swipeRightEnabled) {
-        translateX.value = ctx.startX + event.translationX;
+        _translateX.value = ctx.startX + event.translationX;
       } else if (event.translationX < ctx.startX && swipeLeftEnabled) {
-        translateX.value = ctx.startX + event.translationX;
+        _translateX.value = ctx.startX + event.translationX;
       }
+      translateX.value = _translateX.value;
     },
     onEnd: (event) => {
-      translateX.value = withTiming(0, { easing: Easing.out(Easing.cubic) });
+      _translateX.value = withTiming(0, { easing: Easing.out(Easing.cubic) });
+      translateX.value = _translateX.value;
+      onSwipeEnd?.(event);
     },
   });
-
-  // const backgroundStyle = useAnimatedStyle(() => {
-  //   const target = translateX.value > 0 ? leftBg : rightBg;
-  //   const backgroundColor = interpolateColor(
-  //     Math.abs(translateX.value),
-  //     [0, 50],
-  //     ["transparent", target as string]
-  //   );
-
-  //   return {
-  //     backgroundColor,
-  //   };
-  // });
 
   const rowStyle = useAnimatedStyle(() => {
     return {
-      opacity: 0.25,
-      transform: [{ translateX: translateX.value }],
-    };
-  });
-
-  const leftOptionWidth = useAnimatedStyle(() => {
-    return {
-      width: interpolate(translateX.value, [-1, 0, 1], [0, 0, 1]),
-    };
-  });
-
-  const rightOptionWidth = useAnimatedStyle(() => {
-    return {
-      width: interpolate(translateX.value, [-1, 0, 1], [1, 0, 0]),
+      transform: [{ translateX: _translateX.value }],
     };
   });
 
   return (
     <View style={[styles.swipeableRow]}>
       <View style={styles.optionsContainer}>
-        <Animated.View style={[styles.option, styles.left, leftOptionWidth]}>
+        <Animated.View style={[styles.option, styles.left]}>
           {leftOption}
         </Animated.View>
-        <Animated.View style={[styles.option, styles.right, rightOptionWidth]}>
+        <Animated.View style={[styles.option, styles.right]}>
           {rightOption}
         </Animated.View>
       </View>

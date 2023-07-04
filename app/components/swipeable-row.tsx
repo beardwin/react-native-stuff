@@ -1,11 +1,15 @@
-import { Alert, ScrollView, StyleSheet, Text, View } from "react-native";
+import { ScrollView, StyleSheet, Text, View } from "react-native";
 import { Stack } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Row } from "../../src/components/Row";
 import { SwipeableRow } from "../../src/components/SwipeableRow/SwipeableRow";
 
+import { useSharedValue } from "react-native-reanimated";
+import { VoteOption } from "../../src/components/SwipeableRow/VoteOption";
+
 export default function Page() {
   const insets = useSafeAreaInsets();
+  const translateX = useSharedValue(0);
 
   return (
     <ScrollView
@@ -24,12 +28,14 @@ export default function Page() {
         />
       </SwipeableRow>
       <SwipeableRow
+        translateX={translateX}
         leftOption={
-          <View style={styles.option}>
-            <Text ellipsizeMode="clip" numberOfLines={1}>
-              Poofarts
-            </Text>
-          </View>
+          <VoteOption
+            translateX={translateX}
+            vote={-1}
+            onUpVote={() => {}}
+            onDownVote={() => {}}
+          />
         }
       >
         <Row
