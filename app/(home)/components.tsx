@@ -11,6 +11,7 @@ export default function ComponentsScreen() {
         Product Card
       </RowLink>
       <RowLink href="/components/timer">Timer</RowLink>
+      <RowLink href="/components/swipeable-row">Swipeable Row</RowLink>
     </ScrollView>
   );
 }
