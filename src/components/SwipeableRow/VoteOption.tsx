@@ -10,9 +10,10 @@ import Animated, {
   withSpring,
 } from "react-native-reanimated";
 import { AntDesign } from "@expo/vector-icons";
-import { StyleSheet, ColorValue, LayoutRectangle } from "react-native";
-import { useState } from "react";
+import { StyleSheet, ColorValue, LayoutRectangle, Alert } from "react-native";
+import { useEffect, useState } from "react";
 import * as Haptics from "expo-haptics";
+import { useSwipeableRow } from "./SwipeableRowProvider";
 
 interface VoteColor {
   foreground: ColorValue;
@@ -39,7 +40,6 @@ type Stops = [first: number, second: number];
 const DEFAULT_STOPS: Stops = [75, 125];
 
 interface Props {
-  translateX: Animated.SharedValue<number>;
   stops?: Stops;
   voteColors?: VoteColors;
   vote?: number;
@@ -53,18 +53,39 @@ const buzz = () => {
 };
 
 export const VoteOption = ({
-  translateX,
   stops = DEFAULT_STOPS,
   voteColors = DEFAULT_VOTE_COLORS,
   vote = 0,
+  onUpVote,
+  onDownVote,
 }: Props) => {
-  const [arrow, setArrow] = useState<LayoutRectangle | null>(null);
-
   const [firstStop, secondStop] = stops;
   const [first, second] =
     vote === -1
       ? [voteColors.downvote, voteColors.upvote]
       : [voteColors.upvote, voteColors.downvote];
+
+  const isFrozen = useSharedValue(false);
+  const [arrow, setArrow] = useState<LayoutRectangle | null>(null);
+  const { subscribe, translateX } = useSwipeableRow();
+
+  useEffect(() => {
+    return subscribe({
+      onStart: (event, ctx) => {
+        "worklet";
+        isFrozen.value = false;
+      },
+      onEnd: (event, ctx) => {
+        "worklet";
+        if (translateX.value >= secondStop) {
+          runOnJS(vote === -1 ? onUpVote : onDownVote)();
+        } else if (translateX.value >= firstStop) {
+          runOnJS(vote === -1 ? onDownVote : onUpVote)();
+        }
+        isFrozen.value = true;
+      },
+    });
+  }, [subscribe]);
 
   // The timer used for the rotation animation
   const rotationTimer = useSharedValue(0);
@@ -72,17 +93,19 @@ export const VoteOption = ({
   // Triggers a 180 degree rotation animation when the user
   // drags across the appropriate threshold.
   useAnimatedReaction(
-    () => translateX.value,
-    (currentValue, previousValue) => {
+    () => ({ translateX: translateX.value, isFrozen: isFrozen.value }),
+    (current, previous) => {
+      if (current.isFrozen) return;
+
       const hitFirstStop =
-        previousValue &&
-        ((currentValue >= firstStop && previousValue < firstStop) ||
-          (currentValue < firstStop && previousValue >= firstStop));
+        previous &&
+        ((current.translateX >= firstStop && previous.translateX < firstStop) ||
+          (current.translateX < firstStop && previous.translateX >= firstStop));
 
       const hitSecondStop =
-        currentValue >= secondStop &&
-        previousValue &&
-        previousValue < secondStop;
+        current.translateX >= secondStop &&
+        previous &&
+        previous.translateX < secondStop;
 
       if (hitFirstStop) {
         buzz();
@@ -94,15 +117,15 @@ export const VoteOption = ({
           damping: 12,
         });
       } else if (
-        currentValue <= secondStop &&
-        previousValue &&
-        previousValue >= secondStop
+        current.translateX <= secondStop &&
+        previous &&
+        previous.translateX >= secondStop
       ) {
         buzz();
         rotationTimer.value = withSpring(rotationTimer.value - 180, {
           damping: 12,
         });
-      } else if (currentValue === 0) {
+      } else if (current.translateX === 0) {
         rotationTimer.value = vote === -1 ? 180 : 0;
       }
     },
@@ -114,6 +137,8 @@ export const VoteOption = ({
    * as a user swipes the row
    */
   const backgroundStyle = useAnimatedStyle(() => {
+    if (isFrozen.value) return {};
+
     const backgroundColor = interpolateColor(
       Math.abs(translateX.value),
       [0, firstStop / 2, firstStop * 1.5, secondStop],

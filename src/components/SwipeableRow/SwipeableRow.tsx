@@ -1,9 +1,9 @@
-import React from "react";
+import React, { useCallback, useRef, useState } from "react";
 import { StyleSheet, View } from "react-native";
 import Animated, {
   Easing,
+  GestureHandlers,
   SharedValue,
-  interpolate,
   useAnimatedGestureHandler,
   useAnimatedStyle,
   useSharedValue,
@@ -15,10 +15,8 @@ import {
   PanGestureHandlerEventPayload,
   PanGestureHandlerGestureEvent,
 } from "react-native-gesture-handler";
-
-type SwipeableRowContext = {
-  startX: number;
-};
+import { Handlers, SwipeableRowGestureContext } from "./types";
+import { SwipeableRowProvider } from "./SwipeableRowProvider";
 
 interface Props {
   /**
@@ -51,55 +49,83 @@ interface Props {
   children: React.ReactNode;
 }
 
-export const SwipeableRow = ({
-  leftOption,
-  rightOption,
-  translateX = { value: 0 },
-  onSwipeEnd,
-  children,
-}: Props) => {
-  const _translateX = useSharedValue(0);
+export const SwipeableRow = ({ leftOption, rightOption, children }: Props) => {
+  const [subscribers, setSubscribers] = useState<Handlers[]>([]);
+
+  const subscribe = useCallback(
+    (handlers: Handlers) => {
+      setSubscribers((subs) => [...subs, handlers]);
+      return () => {
+        setSubscribers((subs) =>
+          subs.filter((handler) => handler !== handlers)
+        );
+      };
+    },
+    [setSubscribers]
+  );
+
   const swipeRightEnabled = Boolean(leftOption);
   const swipeLeftEnabled = Boolean(rightOption);
 
+  const translateX = useSharedValue(0);
   const onGestureEvent = useAnimatedGestureHandler<
     PanGestureHandlerGestureEvent,
-    SwipeableRowContext
-  >({
-    onStart: (event, ctx) => {
-      ctx.startX = _translateX.value;
-      translateX.value = _translateX.value;
+    SwipeableRowGestureContext
+  >(
+    {
+      onStart: (event, ctx) => {
+        ctx.startX = translateX.value;
+        subscribers.forEach((handler) => {
+          handler.onStart?.(event, ctx);
+        });
+      },
+      onActive: (event, ctx) => {
+        if (event.translationX > ctx.startX && swipeRightEnabled) {
+          translateX.value = ctx.startX + event.translationX;
+        } else if (event.translationX < ctx.startX && swipeLeftEnabled) {
+          translateX.value = ctx.startX + event.translationX;
+        }
+        subscribers.forEach((handler) => {
+          handler.onActive?.(event, ctx);
+        });
+      },
+      onCancel: (event, ctx) => {
+        subscribers.forEach((handler) => {
+          handler.onCancel?.(event, ctx);
+        });
+      },
+      onFail: (event, ctx) => {
+        subscribers.forEach((handler) => {
+          handler.onFail?.(event, ctx);
+        });
+      },
+      onEnd: (event, ctx) => {
+        translateX.value = withTiming(0, { easing: Easing.out(Easing.cubic) });
+        subscribers.forEach((handler) => {
+          handler.onEnd?.(event, ctx);
+        });
+      },
     },
-    onActive: (event, ctx) => {
-      if (event.translationX > ctx.startX && swipeRightEnabled) {
-        _translateX.value = ctx.startX + event.translationX;
-      } else if (event.translationX < ctx.startX && swipeLeftEnabled) {
-        _translateX.value = ctx.startX + event.translationX;
-      }
-      translateX.value = _translateX.value;
-    },
-    onEnd: (event) => {
-      _translateX.value = withTiming(0, { easing: Easing.out(Easing.cubic) });
-      translateX.value = _translateX.value;
-      onSwipeEnd?.(event);
-    },
-  });
+    [subscribers]
+  );
 
   const rowStyle = useAnimatedStyle(() => {
     return {
-      transform: [{ translateX: _translateX.value }],
+      transform: [{ translateX: translateX.value }],
     };
   });
 
   return (
     <View style={[styles.swipeableRow]}>
       <View style={styles.optionsContainer}>
-        <Animated.View style={[styles.option, styles.left]}>
-          {leftOption}
-        </Animated.View>
-        <Animated.View style={[styles.option, styles.right]}>
-          {rightOption}
-        </Animated.View>
+        <SwipeableRowProvider translateX={translateX} subscribe={subscribe}>
+          <Animated.View style={[styles.option, styles.left]}>
+            {leftOption}
+          </Animated.View>
+          <Animated.View style={[styles.option, styles.right]}>
+            {rightOption}
+          </Animated.View>
+        </SwipeableRowProvider>
       </View>
       <PanGestureHandler onGestureEvent={onGestureEvent}>
         <Animated.View style={rowStyle}>{children}</Animated.View>

@@ -1,4 +1,4 @@
-import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { Alert, ScrollView, StyleSheet, Text, View } from "react-native";
 import { Stack } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Row } from "../../src/components/Row";
@@ -9,7 +9,6 @@ import { VoteOption } from "../../src/components/SwipeableRow/VoteOption";
 
 export default function Page() {
   const insets = useSafeAreaInsets();
-  const translateX = useSharedValue(0);
 
   return (
     <ScrollView
@@ -28,12 +27,14 @@ export default function Page() {
         />
       </SwipeableRow>
       <SwipeableRow
-        translateX={translateX}
         leftOption={
           <VoteOption
-            translateX={translateX}
-            onUpVote={() => {}}
-            onDownVote={() => {}}
+            onUpVote={() => {
+              Alert.alert("User is lovin it!");
+            }}
+            onDownVote={() => {
+              Alert.alert("User is unhappy!");
+            }}
           />
         }
       >
