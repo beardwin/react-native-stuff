@@ -2,13 +2,17 @@ import Animated, {
   Extrapolation,
   interpolate,
   interpolateColor,
+  runOnJS,
+  runOnUI,
   useAnimatedReaction,
   useAnimatedStyle,
   useSharedValue,
   withSpring,
 } from "react-native-reanimated";
 import { AntDesign } from "@expo/vector-icons";
-import { StyleSheet, ColorValue } from "react-native";
+import { StyleSheet, ColorValue, LayoutRectangle } from "react-native";
+import { useState } from "react";
+import * as Haptics from "expo-haptics";
 
 interface VoteColor {
   foreground: ColorValue;
@@ -32,7 +36,7 @@ const DEFAULT_VOTE_COLORS: VoteColors = {
 };
 
 type Stops = [first: number, second: number];
-const DEFAULT_STOPS: Stops = [50, 100];
+const DEFAULT_STOPS: Stops = [75, 125];
 
 interface Props {
   translateX: Animated.SharedValue<number>;
@@ -43,12 +47,19 @@ interface Props {
   onDownVote: () => void;
 }
 
+const buzz = () => {
+  "worklet";
+  runOnJS(Haptics.impactAsync)(Haptics.ImpactFeedbackStyle.Medium);
+};
+
 export const VoteOption = ({
   translateX,
   stops = DEFAULT_STOPS,
   voteColors = DEFAULT_VOTE_COLORS,
   vote = 0,
 }: Props) => {
+  const [arrow, setArrow] = useState<LayoutRectangle | null>(null);
+
   const [firstStop, secondStop] = stops;
   const [first, second] =
     vote === -1
@@ -63,11 +74,22 @@ export const VoteOption = ({
   useAnimatedReaction(
     () => translateX.value,
     (currentValue, previousValue) => {
-      if (
+      const hitFirstStop =
+        previousValue &&
+        ((currentValue >= firstStop && previousValue < firstStop) ||
+          (currentValue < firstStop && previousValue >= firstStop));
+
+      const hitSecondStop =
         currentValue >= secondStop &&
         previousValue &&
-        previousValue < secondStop
-      ) {
+        previousValue < secondStop;
+
+      if (hitFirstStop) {
+        buzz();
+      }
+
+      if (hitSecondStop) {
+        buzz();
         rotationTimer.value = withSpring(rotationTimer.value + 180, {
           damping: 12,
         });
@@ -76,10 +98,10 @@ export const VoteOption = ({
         previousValue &&
         previousValue >= secondStop
       ) {
+        buzz();
         rotationTimer.value = withSpring(rotationTimer.value - 180, {
           damping: 12,
         });
-        // rotationTimer.value = withSpring(vote === -1 ? 180 : 0);
       } else if (currentValue === 0) {
         rotationTimer.value = vote === -1 ? 180 : 0;
       }
@@ -94,7 +116,7 @@ export const VoteOption = ({
   const backgroundStyle = useAnimatedStyle(() => {
     const backgroundColor = interpolateColor(
       Math.abs(translateX.value),
-      [0, firstStop / 2, firstStop, (firstStop + secondStop) / 2],
+      [0, firstStop / 2, firstStop * 1.5, secondStop],
       [
         "transparent",
         first.background as string,
@@ -113,8 +135,8 @@ export const VoteOption = ({
   const arrowStyle = useAnimatedStyle(() => {
     const scale = interpolate(
       translateX.value,
-      [0, firstStop],
-      [0.6, 1],
+      [0, firstStop * 0.8],
+      [0.4, 1],
       Extrapolation.CLAMP
     );
 
@@ -130,28 +152,44 @@ export const VoteOption = ({
     };
   });
 
+  const arrowOffset = useAnimatedStyle(() => {
+    const xOffset = interpolate(
+      translateX.value,
+      [0, firstStop, secondStop],
+      [
+        -(arrow?.width ?? 0),
+        (firstStop - (arrow?.width ?? 0)) / 2,
+        (secondStop - (arrow?.width ?? 0)) / 2,
+      ]
+    );
+
+    return {
+      transform: [{ translateX: xOffset }],
+    };
+  }, [arrow]);
+
   return (
     <>
       <Animated.View style={[styles.background, backgroundStyle]} />
-      <Animated.View style={[styles.option, arrowStyle]}>
-        <AntDesign
-          name="arrowup"
-          size={24}
-          color="white"
-          onLayout={(event) => console.log(event.nativeEvent.layout)}
-        />
+      <Animated.View style={[styles.option, arrowOffset]}>
+        <Animated.View
+          style={[styles.option, arrowStyle]}
+          onLayout={(event) => {
+            setArrow(event.nativeEvent.layout);
+          }}
+        >
+          <AntDesign name="arrowup" size={24} color="white" />
+        </Animated.View>
       </Animated.View>
     </>
   );
 };
 
-const paddingHorizontal = 8;
 const styles = StyleSheet.create({
   option: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    paddingHorizontal,
   },
   background: {
     ...StyleSheet.absoluteFillObject,
