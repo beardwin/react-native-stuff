@@ -32,7 +32,6 @@ export default function Page() {
         leftOption={
           <VoteOption
             translateX={translateX}
-            vote={-1}
             onUpVote={() => {}}
             onDownVote={() => {}}
           />
