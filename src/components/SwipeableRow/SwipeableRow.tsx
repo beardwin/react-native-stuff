@@ -6,6 +6,7 @@ import Animated, {
   SharedValue,
   useAnimatedGestureHandler,
   useAnimatedStyle,
+  useDerivedValue,
   useSharedValue,
   withTiming,
 } from "react-native-reanimated";
@@ -68,6 +69,8 @@ export const SwipeableRow = ({ leftOption, rightOption, children }: Props) => {
   const swipeLeftEnabled = Boolean(rightOption);
 
   const translateX = useSharedValue(0);
+  const subsTranslateX = useDerivedValue(() => translateX.value);
+
   const onGestureEvent = useAnimatedGestureHandler<
     PanGestureHandlerGestureEvent,
     SwipeableRowGestureContext
@@ -118,7 +121,7 @@ export const SwipeableRow = ({ leftOption, rightOption, children }: Props) => {
   return (
     <View style={[styles.swipeableRow]}>
       <View style={styles.optionsContainer}>
-        <SwipeableRowProvider translateX={translateX} subscribe={subscribe}>
+        <SwipeableRowProvider translateX={subsTranslateX} subscribe={subscribe}>
           <Animated.View style={[styles.option, styles.left]}>
             {leftOption}
           </Animated.View>
