@@ -1,8 +1,7 @@
-import React, { useCallback, useRef, useState } from "react";
+import React, { useCallback, useState } from "react";
 import { StyleSheet, View } from "react-native";
 import Animated, {
   Easing,
-  GestureHandlers,
   SharedValue,
   useAnimatedGestureHandler,
   useAnimatedStyle,
@@ -11,9 +10,7 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 import {
-  GestureEventPayload,
   PanGestureHandler,
-  PanGestureHandlerEventPayload,
   PanGestureHandlerGestureEvent,
 } from "react-native-gesture-handler";
 import { Handlers, SwipeableRowGestureContext } from "./types";
@@ -36,13 +33,6 @@ interface Props {
    * as well as lets go.
    */
   translateX?: SharedValue<number>;
-
-  /**
-   * Fired when the user lets go of the swipeable row
-   */
-  onSwipeEnd?: (
-    event: Readonly<GestureEventPayload & PanGestureHandlerEventPayload>
-  ) => void;
 
   /**
    * The component which will pan right and left as the user drags
