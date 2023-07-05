@@ -6,9 +6,11 @@ import { SwipeableRow } from "../../src/components/SwipeableRow/SwipeableRow";
 
 import { useSharedValue } from "react-native-reanimated";
 import { VoteOption } from "../../src/components/SwipeableRow/VoteOption";
+import { useState } from "react";
 
 export default function Page() {
   const insets = useSafeAreaInsets();
+  const [vote, setVote] = useState<number | undefined>();
 
   return (
     <ScrollView
@@ -30,11 +32,16 @@ export default function Page() {
         leftOption={
           <VoteOption
             onUpVote={() => {
-              Alert.alert("User is lovin it!");
+              setVote((vote) => {
+                return vote === 1 ? 0 : 1;
+              });
             }}
             onDownVote={() => {
-              Alert.alert("User is unhappy!");
+              setVote((vote) => {
+                return vote === -1 ? 0 : -1;
+              });
             }}
+            vote={vote}
           />
         }
       >
