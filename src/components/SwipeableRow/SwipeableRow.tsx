@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import { StyleSheet, View } from "react-native";
 import Animated, {
   Easing,
@@ -10,7 +10,12 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 import {
+  Gesture,
+  GestureDetector,
+  GestureStateChangeEvent,
+  GestureUpdateEvent,
   PanGestureHandler,
+  PanGestureHandlerEventPayload,
   PanGestureHandlerGestureEvent,
 } from "react-native-gesture-handler";
 import { Handlers, SwipeableRowGestureContext } from "./types";
@@ -61,46 +66,50 @@ export const SwipeableRow = ({ leftOption, rightOption, children }: Props) => {
   const translateX = useSharedValue(0);
   const subsTranslateX = useDerivedValue(() => translateX.value);
 
-  const onGestureEvent = useAnimatedGestureHandler<
-    PanGestureHandlerGestureEvent,
-    SwipeableRowGestureContext
-  >(
-    {
-      onStart: (event, ctx) => {
-        ctx.startX = translateX.value;
-        subscribers.forEach((handler) => {
-          handler.onStart?.(event, ctx);
-        });
-      },
-      onActive: (event, ctx) => {
-        if (event.translationX > ctx.startX && swipeRightEnabled) {
-          translateX.value = ctx.startX + event.translationX;
-        } else if (event.translationX < ctx.startX && swipeLeftEnabled) {
-          translateX.value = ctx.startX + event.translationX;
-        }
-        subscribers.forEach((handler) => {
-          handler.onActive?.(event, ctx);
-        });
-      },
-      onCancel: (event, ctx) => {
-        subscribers.forEach((handler) => {
-          handler.onCancel?.(event, ctx);
-        });
-      },
-      onFail: (event, ctx) => {
-        subscribers.forEach((handler) => {
-          handler.onFail?.(event, ctx);
-        });
-      },
-      onEnd: (event, ctx) => {
+  const context = useSharedValue<SwipeableRowGestureContext>({ startX: 0 });
+
+  const panGesture = useMemo(() => {
+    const broadcast = (
+      event: GestureStateChangeEvent<PanGestureHandlerEventPayload>,
+      name: keyof Handlers
+    ) => {
+      "worklet";
+      subscribers.forEach((handler) => {
+        handler[name]?.(event);
+      });
+    };
+
+    return Gesture.Pan()
+      .activeOffsetX([-20, 20])
+      .onBegin((event) => {
+        broadcast(event, "onBegin");
+      })
+      .onStart((event) => {
+        context.value.startX = translateX.value;
+        broadcast(event, "onStart");
+      })
+      .onEnd((event) => {
         translateX.value = withTiming(0, { easing: Easing.out(Easing.cubic) });
+        broadcast(event, "onEnd");
+      })
+      .onFinalize((event) => {
+        broadcast(event, "onFinalize");
+      })
+      .onUpdate((event) => {
+        if (event.translationX > context.value.startX && swipeRightEnabled) {
+          translateX.value = context.value.startX + event.translationX;
+        } else if (
+          event.translationX < context.value.startX &&
+          swipeLeftEnabled
+        ) {
+          translateX.value = context.value.startX + event.translationX;
+        }
+
         subscribers.forEach((handler) => {
-          handler.onEnd?.(event, ctx);
+          handler.onUpdate?.(event);
         });
-      },
-    },
-    [subscribers]
-  );
+      });
+  }, [subscribers]);
 
   const rowStyle = useAnimatedStyle(() => {
     return {
@@ -120,9 +129,9 @@ export const SwipeableRow = ({ leftOption, rightOption, children }: Props) => {
           </Animated.View>
         </SwipeableRowProvider>
       </View>
-      <PanGestureHandler onGestureEvent={onGestureEvent}>
+      <GestureDetector gesture={panGesture}>
         <Animated.View style={rowStyle}>{children}</Animated.View>
-      </PanGestureHandler>
+      </GestureDetector>
     </View>
   );
 };

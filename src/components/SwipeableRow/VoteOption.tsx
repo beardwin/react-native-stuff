@@ -3,7 +3,6 @@ import Animated, {
   interpolate,
   interpolateColor,
   runOnJS,
-  runOnUI,
   useAnimatedReaction,
   useAnimatedStyle,
   useSharedValue,
@@ -14,9 +13,9 @@ import { StyleSheet, ColorValue, LayoutRectangle, Alert } from "react-native";
 import { useEffect, useState } from "react";
 import * as Haptics from "expo-haptics";
 import { useSwipeableRow } from "./SwipeableRowProvider";
+import { Handlers } from "./types";
 
 interface VoteColor {
-  foreground: ColorValue;
   background: ColorValue;
 }
 
@@ -27,11 +26,9 @@ type VoteColors = {
 
 const DEFAULT_VOTE_COLORS: VoteColors = {
   upvote: {
-    foreground: "#fff",
     background: "orange",
   },
   downvote: {
-    foreground: "#fff",
     background: "blue",
   },
 };
@@ -60,22 +57,32 @@ export const VoteOption = ({
   onDownVote,
 }: Props) => {
   const [firstStop, secondStop] = stops;
+
   const [first, second] =
     vote === -1
       ? [voteColors.downvote, voteColors.upvote]
       : [voteColors.upvote, voteColors.downvote];
 
+  // shared value to freeze animations when a user lets go
   const isFrozen = useSharedValue(false);
+
   const [arrow, setArrow] = useState<LayoutRectangle | null>(null);
   const { subscribe, translateX } = useSwipeableRow();
 
   useEffect(() => {
+    /**
+     * Plugin to the SwipeableRow gestures. This allows us to
+     * fire events and do whatever we want.
+     *
+     * These *must* be marked as worklets, as they'll be executed
+     * on the main thread.
+     */
     return subscribe({
-      onStart: (event, ctx) => {
+      onStart: (event) => {
         "worklet";
         isFrozen.value = false;
       },
-      onEnd: (event, ctx) => {
+      onEnd: (event) => {
         "worklet";
         if (translateX.value >= secondStop) {
           runOnJS(vote === -1 ? onUpVote : onDownVote)();
@@ -84,8 +91,8 @@ export const VoteOption = ({
         }
         isFrozen.value = true;
       },
-    });
-  }, [subscribe]);
+    } satisfies Handlers);
+  }, [subscribe, vote]);
 
   // The timer used for the rotation animation
   const rotationTimer = useSharedValue(0);
@@ -107,6 +114,11 @@ export const VoteOption = ({
         previous &&
         previous.translateX < secondStop;
 
+      const slidBackFromSecondStop =
+        current.translateX <= secondStop &&
+        previous &&
+        previous.translateX >= secondStop;
+
       if (hitFirstStop) {
         buzz();
       }
@@ -116,11 +128,7 @@ export const VoteOption = ({
         rotationTimer.value = withSpring(rotationTimer.value + 180, {
           damping: 12,
         });
-      } else if (
-        current.translateX <= secondStop &&
-        previous &&
-        previous.translateX >= secondStop
-      ) {
+      } else if (slidBackFromSecondStop) {
         buzz();
         rotationTimer.value = withSpring(rotationTimer.value - 180, {
           damping: 12,
@@ -177,6 +185,10 @@ export const VoteOption = ({
     };
   });
 
+  /**
+   * Provides an offset to the arrow, which makes it look and feel
+   * as though the user is dragging it from off the screen.
+   */
   const arrowOffset = useAnimatedStyle(() => {
     const xOffset = interpolate(
       translateX.value,
