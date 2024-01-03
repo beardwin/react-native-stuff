@@ -6,7 +6,12 @@ export default function ButtonScreen() {
   return (
     <View style={styles.container}>
       <Stack.Screen options={{ title: "Button" }} />
-      <Button title="My button" />
+      <Button
+        title="My button"
+        onPress={() => {
+          console.log("Button press");
+        }}
+      />
     </View>
   );
 }

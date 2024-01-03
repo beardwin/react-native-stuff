@@ -1,4 +1,5 @@
-import { View, Text } from "react-native";
+import { View, Text, StyleSheet } from "react-native";
+import { TouchableWithoutFeedback } from "react-native-gesture-handler";
 
 interface Props {
   title: string;
@@ -7,8 +8,19 @@ interface Props {
 
 export const Button = ({ title, onPress }: Props) => {
   return (
-    <View>
-      <Text>{title}</Text>
-    </View>
+    <TouchableWithoutFeedback onPress={onPress}>
+      <View style={styles.container}>
+        <Text>{title}</Text>
+      </View>
+    </TouchableWithoutFeedback>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    borderWidth: 1,
+    borderRadius: 999,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+  },
+});
