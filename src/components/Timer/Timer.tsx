@@ -26,12 +26,12 @@ type TimerAPI = Pick<ReturnType<typeof useTimer>, "start" | "cancel" | "reset">;
 export const Timer = forwardRef<TimerAPI, Props>(
   (
     {
-      duration = 15000,
+      duration = 10000,
       radius,
       strokeWidth,
-      backgroundColor = "rgba(0, 0, 0, 0.2)",
+      backgroundColor = "rgba(0, 0, 0, 0.1)",
       foregroundColor = "rgba(0, 0, 0, 0.7)",
-      fontColor = "rgba(0,0,0, 0.7)",
+      fontColor = "rgba(255,255,255, 1)",
       showControls = true,
     }: Props,
     ref
