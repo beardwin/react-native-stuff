@@ -33,9 +33,5 @@
     "@types/react": "~18.2.14",
     "typescript": "^5.1.3"
   },
-  "private": true,
-  "resolutions": {
-    "metro": "0.76.0",
-    "metro-resolver": "0.76.0"
-  }
+  "private": true
 }
