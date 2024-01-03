@@ -5,15 +5,15 @@ import Animated, {
   runOnJS,
   useAnimatedReaction,
   useAnimatedStyle,
+  useDerivedValue,
   useSharedValue,
   withSpring,
 } from "react-native-reanimated";
-import { AntDesign } from "@expo/vector-icons";
-import { StyleSheet, ColorValue, LayoutRectangle, Alert } from "react-native";
-import { useEffect, useState } from "react";
 import * as Haptics from "expo-haptics";
+import { AntDesign } from "@expo/vector-icons";
+import { StyleSheet, ColorValue, LayoutRectangle } from "react-native";
+import { useEffect, useRef, useState } from "react";
 import { useSwipeableRow } from "./SwipeableRowProvider";
-import { Handlers } from "./types";
 
 interface VoteColor {
   background: ColorValue;
@@ -57,11 +57,13 @@ export const VoteOption = ({
   onDownVote,
 }: Props) => {
   const [firstStop, secondStop] = stops;
-
   const [first, second] =
     vote === -1
       ? [voteColors.downvote, voteColors.upvote]
       : [voteColors.upvote, voteColors.downvote];
+
+  // Provides UI thread access to the current vote as it changes.
+  const currentVote = useDerivedValue<number>(() => vote);
 
   // shared value to freeze animations when a user lets go
   const isFrozen = useSharedValue(false);
@@ -78,21 +80,22 @@ export const VoteOption = ({
      * on the main thread.
      */
     return subscribe({
-      onStart: (event) => {
+      onStart: () => {
         "worklet";
         isFrozen.value = false;
       },
       onEnd: (event) => {
         "worklet";
-        if (translateX.value >= secondStop) {
-          runOnJS(vote === -1 ? onUpVote : onDownVote)();
-        } else if (translateX.value >= firstStop) {
-          runOnJS(vote === -1 ? onDownVote : onUpVote)();
-        }
         isFrozen.value = true;
+
+        if (event.translationX >= secondStop) {
+          runOnJS(currentVote.value === -1 ? onUpVote : onDownVote)();
+        } else if (event.translationX >= firstStop) {
+          runOnJS(currentVote.value === -1 ? onDownVote : onUpVote)();
+        }
       },
-    } satisfies Handlers);
-  }, [subscribe, vote]);
+    });
+  }, [subscribe, onUpVote, onDownVote, firstStop, secondStop]);
 
   // The timer used for the rotation animation
   const rotationTimer = useSharedValue(0);
@@ -134,10 +137,10 @@ export const VoteOption = ({
           damping: 12,
         });
       } else if (current.translateX === 0) {
-        rotationTimer.value = vote === -1 ? 180 : 0;
+        rotationTimer.value = currentVote.value === -1 ? 180 : 0;
       }
     },
-    [first, second]
+    [first, second, firstStop, secondStop]
   );
 
   /**
