@@ -1,5 +1,5 @@
 import React from "react";
-import { StyleSheet, View } from "react-native";
+import { LayoutChangeEvent, StyleSheet, View } from "react-native";
 import { Groove } from "./Groove";
 import { Grip } from "../Grip";
 import Animated, {
@@ -20,9 +20,25 @@ interface Coordinate {
 
 export const ClickWheel = ({ diameter = 300, thickness = 40 }: Props) => {
   const gripSize = thickness * 1.5;
+  const gripTop = (thickness - gripSize) / 2;
+  const gripBottom = (gripSize - thickness) / -2;
 
+  const clickwheelPosition = useSharedValue<undefined | Coordinate>(undefined);
   const origin = useSharedValue<undefined | Coordinate>(undefined);
   const current = useSharedValue<undefined | Coordinate>(undefined);
+
+  const onLayout = (e: LayoutChangeEvent) => {
+    const {
+      nativeEvent: {
+        layout: { x, y },
+      },
+    } = e;
+
+    clickwheelPosition.value = {
+      x,
+      y,
+    };
+  };
 
   const pan = Gesture.Pan()
     .onBegin((e) => {
@@ -41,26 +57,45 @@ export const ClickWheel = ({ diameter = 300, thickness = 40 }: Props) => {
     });
 
   const offsets = useAnimatedStyle(() => {
-    if (!origin.value || !current.value) return {};
+    if (!origin.value || !current.value || !clickwheelPosition.value) return {};
+
+    const translateBounds = {
+      x: {
+        lower: (diameter - gripSize - (thickness - gripSize)) / -2,
+        upper: (diameter - gripSize - (thickness - gripSize)) / 2,
+      },
+      y: {
+        lower: (diameter - thickness) * -1,
+        upper: 0,
+      },
+    };
+
+    let translateX = current.value.x - origin.value.x;
+    let translateY = current.value.y - origin.value.y;
+
+    if (translateX < translateBounds.x.lower) {
+      translateX = translateBounds.x.lower;
+    } else if (translateX > translateBounds.x.upper) {
+      translateX = translateBounds.x.upper;
+    }
+
+    if (translateY < translateBounds.y.lower) {
+      translateY = translateBounds.y.lower;
+    } else if (translateY > translateBounds.y.upper) {
+      translateY = translateBounds.y.upper;
+    }
 
     return {
-      transform: [
-        { translateX: current.value.x - origin.value.x },
-        { translateY: current.value.y - origin.value.y },
-      ],
+      transform: [{ translateX }, { translateY }],
     };
   });
 
   return (
-    <View style={{ borderWidth: 0 }}>
+    <View style={{ borderWidth: 1 }} onLayout={onLayout}>
       <Groove diameter={diameter} thickness={thickness} />
       <GestureDetector gesture={pan}>
         <Animated.View
-          style={[
-            styles.gripContainer,
-            { bottom: (gripSize - thickness) / -2 },
-            offsets,
-          ]}
+          style={[styles.gripContainer, { bottom: gripBottom }, offsets]}
         >
           <Grip diameter={gripSize} color="#eee" />
         </Animated.View>
