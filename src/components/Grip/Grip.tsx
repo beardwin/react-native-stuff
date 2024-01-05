@@ -8,38 +8,38 @@ import {
 } from "react-native";
 
 interface Props {
-  size: number;
+  diameter: number;
   color: ColorValue;
   shadowColor?: ColorValue;
 }
 
-export const Grip = ({ size, color }: Props) => {
-  const dimpleSize = size / 5;
+export const Grip = ({ diameter, color }: Props) => {
+  const dimpleSize = diameter / 5;
 
   return (
-    <Surface size={size} color={color}>
-      <Surface size={dimpleSize} color={color} />
-      <Surface size={dimpleSize} color={color} />
-      <Surface size={dimpleSize} color={color} />
+    <Surface diameter={diameter} color={color}>
+      <Surface diameter={dimpleSize} color={color} />
+      <Surface diameter={dimpleSize} color={color} />
+      <Surface diameter={dimpleSize} color={color} />
     </Surface>
   );
 };
 
 interface SurfaceProps {
-  size: number;
+  diameter: number;
   color: ColorValue;
   shadowRadius?: number;
   children?: React.ReactNode;
 }
 
-const Surface = ({ size, color, children }: SurfaceProps) => {
+const Surface = ({ diameter, color, children }: SurfaceProps) => {
   const container: StyleProp<ViewStyle> = {
-    width: size,
+    width: diameter,
     aspectRatio: 1,
     borderRadius: 999,
   };
 
-  const shadowRadius = size / 60;
+  const shadowRadius = diameter / 60;
   return (
     <View
       style={[
@@ -58,7 +58,7 @@ const Surface = ({ size, color, children }: SurfaceProps) => {
           styles.shadow,
           {
             backgroundColor: color,
-            gap: size / 10,
+            gap: diameter / 10,
             shadowRadius,
             shadowOffset: {
               width: 2 * shadowRadius,
