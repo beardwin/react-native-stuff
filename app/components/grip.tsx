@@ -7,6 +7,8 @@ export default function GripScreen() {
     <View style={styles.container}>
       <Stack.Screen options={{ title: "Grip" }} />
       <Grip diameter={50} color="#eee" />
+      <Grip diameter={150} color="#eee" />
+      <Grip diameter={300} color="#eee" />
     </View>
   );
 }
@@ -14,8 +16,7 @@ export default function GripScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    flexDirection: "row",
-    gap: 50,
+    gap: 20,
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: "#eee",

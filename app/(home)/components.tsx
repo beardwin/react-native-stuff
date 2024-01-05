@@ -5,6 +5,7 @@ export default function ComponentsScreen() {
   return (
     <ScrollView>
       <RowLink href="/components/button">Button</RowLink>
+      <RowLink href="/components/click-wheel">Click Wheel</RowLink>
       <RowLink href="/components/grip">Grip</RowLink>
       <RowLink
         href="/components/product-card"
