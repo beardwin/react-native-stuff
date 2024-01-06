@@ -19,6 +19,9 @@ interface Coordinate {
 }
 
 export const ClickWheel = ({ diameter = 300, thickness = 40 }: Props) => {
+  const center = useSharedValue<undefined | Coordinate>(undefined);
+  const centerRad = diameter / 2 - thickness / 2;
+
   const gripSize = thickness * 1.5;
   const gripTop = (thickness - gripSize) / 2;
   const gripBottom = (gripSize - thickness) / -2;
@@ -37,6 +40,11 @@ export const ClickWheel = ({ diameter = 300, thickness = 40 }: Props) => {
     clickwheelPosition.value = {
       x,
       y,
+    };
+
+    center.value = {
+      x: x + diameter / 2,
+      y: y + diameter / 2,
     };
   };
 
@@ -91,7 +99,7 @@ export const ClickWheel = ({ diameter = 300, thickness = 40 }: Props) => {
   });
 
   return (
-    <View style={{ borderWidth: 1 }} onLayout={onLayout}>
+    <View style={{ borderWidth: 0 }} onLayout={onLayout}>
       <Groove diameter={diameter} thickness={thickness} />
       <GestureDetector gesture={pan}>
         <Animated.View
