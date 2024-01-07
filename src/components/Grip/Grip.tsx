@@ -18,9 +18,9 @@ export const Grip = ({ diameter, color }: Props) => {
 
   return (
     <Surface diameter={diameter} color={color}>
+      {/* <Surface diameter={dimpleSize} color={color} />
       <Surface diameter={dimpleSize} color={color} />
-      <Surface diameter={dimpleSize} color={color} />
-      <Surface diameter={dimpleSize} color={color} />
+      <Surface diameter={dimpleSize} color={color} /> */}
     </Surface>
   );
 };
@@ -54,8 +54,6 @@ const Surface = ({ diameter, color, children }: SurfaceProps) => {
       <View
         style={[
           container,
-          styles.inner,
-          styles.shadow,
           {
             backgroundColor: color,
             gap: diameter / 10,
@@ -65,6 +63,8 @@ const Surface = ({ diameter, color, children }: SurfaceProps) => {
               height: 2 * shadowRadius,
             },
           },
+          styles.inner,
+          styles.shadow,
         ]}
       >
         {children}
