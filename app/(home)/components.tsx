@@ -13,7 +13,7 @@ export default function ComponentsScreen() {
       >
         Product Card
       </RowLink>
-      <RowLink href="/components/segment-control">Segment Control</RowLink>
+      <RowLink href="/components/segmented-control">Segment Control</RowLink>
       <RowLink href="/components/timer">Timer</RowLink>
       <RowLink href="/components/swipeable-row">Swipeable Row</RowLink>
     </ScrollView>

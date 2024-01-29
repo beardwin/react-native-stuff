@@ -1,6 +1,5 @@
 import {
   ColorValue,
-  LayoutChangeEvent,
   LayoutRectangle,
   StyleSheet,
   Text,
@@ -21,15 +20,15 @@ import {
 interface Props {
   options: string[];
   highlightColor?: ColorValue;
-  value: string;
-  onChange?: (value: string) => void;
+  selectedIndex?: number;
+  onSelectedIndexChange?: (selectedIndex: number) => void;
 }
 
-export const SegmentControl = ({
+export const SegmentedControl = ({
   options,
   highlightColor = "rgba(0,0,0,0.1)",
-  value,
-  onChange,
+  selectedIndex = 0,
+  onSelectedIndexChange,
 }: Props) => {
   const [layouts, setLayouts] = useState<Record<string, LayoutRectangle>>({});
 
@@ -39,15 +38,15 @@ export const SegmentControl = ({
   const height = useSharedValue(0);
   const borderRadius = useSharedValue(0);
 
-  const onLayout = (layout: LayoutRectangle, id: string) => {
+  const onLayout = (layout: LayoutRectangle, option: string) => {
     setLayouts((current) => {
       return {
         ...current,
-        [id]: layout,
+        [option]: layout,
       };
     });
 
-    if (id === value) {
+    if (selectedIndex === options.indexOf(option)) {
       x.value = layout.x;
       y.value = layout.y;
       width.value = layout.width;
@@ -56,8 +55,8 @@ export const SegmentControl = ({
     }
   };
 
-  const onPress = (id: string) => {
-    const layout = layouts[id];
+  const onPress = (option: string) => {
+    const layout = layouts[option];
 
     x.value = withTiming(layout.x);
     y.value = withTiming(layout.y);
@@ -65,7 +64,7 @@ export const SegmentControl = ({
     height.value = withTiming(layout.height);
     borderRadius.value = withTiming(layout.height / 2);
 
-    onChange?.(id);
+    onSelectedIndexChange?.(options.indexOf(option));
   };
 
   const highlightStyle = useAnimatedStyle(() => {
