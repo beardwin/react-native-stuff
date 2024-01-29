@@ -12,13 +12,11 @@ import Animated, {
   useSharedValue,
   withTiming,
 } from "react-native-reanimated";
-import {
-  TouchableOpacity,
-  TouchableWithoutFeedback,
-} from "react-native-gesture-handler";
+import { TouchableOpacity } from "react-native-gesture-handler";
 
 interface Props {
   options: string[];
+  color?: ColorValue;
   highlightColor?: ColorValue;
   selectedIndex?: number;
   onSelectedIndexChange?: (selectedIndex: number) => void;
@@ -26,6 +24,7 @@ interface Props {
 
 export const SegmentedControl = ({
   options,
+  color = "rgba(0,0,0,1)",
   highlightColor = "rgba(0,0,0,0.1)",
   selectedIndex = 0,
   onSelectedIndexChange,
@@ -92,7 +91,7 @@ export const SegmentedControl = ({
           >
             <TouchableOpacity onPress={() => onPress(option)}>
               <View style={styles.option}>
-                <Text>{option}</Text>
+                <Text style={{ color }}>{option}</Text>
               </View>
             </TouchableOpacity>
           </View>
