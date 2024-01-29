@@ -1,18 +1,22 @@
-import { View } from "react-native";
+import { StyleProp, View, ViewStyle } from "react-native";
 
 interface Props {
   gap?: number;
   horizontal?: boolean;
   children?: React.ReactNode;
+  style?: StyleProp<ViewStyle>;
 }
-export const Stack = ({ gap = 8, horizontal, children }: Props) => {
+export const Stack = ({ gap = 8, horizontal, style, children }: Props) => {
   return (
     <View
-      style={{
-        flexDirection: horizontal ? "row" : "column",
-        gap,
-        alignItems: horizontal ? "center" : undefined,
-      }}
+      style={[
+        {
+          flexDirection: horizontal ? "row" : "column",
+          gap,
+          alignItems: horizontal ? "center" : undefined,
+        },
+        style,
+      ]}
     >
       {children}
     </View>

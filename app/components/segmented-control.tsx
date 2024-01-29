@@ -2,13 +2,14 @@ import { StyleSheet, View } from "react-native";
 import { Stack } from "expo-router";
 import { SegmentControl } from "../../src/components/SegmentedControl";
 import { useState } from "react";
+import { VStack } from "../../src/components/Stack";
 
 export default function SegmentedControlScreen() {
   const options = ["One", "A second one", "Three"];
   const [selectedIndex, setSelectedIndex] = useState(2);
 
   return (
-    <View style={styles.container}>
+    <VStack gap={16} style={styles.container}>
       <Stack.Screen options={{ title: "Segment Control" }} />
       <SegmentControl
         options={options}
@@ -21,7 +22,7 @@ export default function SegmentedControlScreen() {
         options={["This", "One", "Is", "Red"]}
         selectedIndex={0}
       />
-    </View>
+    </VStack>
   );
 }
 
