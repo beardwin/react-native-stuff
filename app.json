@@ -24,7 +24,11 @@
       "expo-router"
     ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSMotionUsageDescription": "Allow $(PRODUCT_NAME) to access your device motion."
+      },
+      "bundleIdentifier": "com.beardwin.reactnativestuff"
     },
     "android": {
       "adaptiveIcon": {
@@ -36,6 +40,14 @@
       "favicon": "./assets/favicon.png",
       "bundler": "metro"
     },
-    "scheme": "anim"
+    "scheme": "anim",
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "6d7dbfa1-3bf4-409c-9837-60f5169db5a6"
+      }
+    }
   }
 }
